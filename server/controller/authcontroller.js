@@ -1,10 +1,32 @@
-
-
-const glogin=(req,res)=>{
+const {oauth2Client} = require('../config/googleconfig')
+const axios = require('axios');
+const UserModel=require('../models/usermodel')
+const jwt=require('jsonwebtoken')
+const glogin=async(req,res)=>{
 try {
-    
+    const {code}=req.query;
+    const gres=await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(gres.tokens);
+    const ures=await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${gres.tokens.access_token}`)
+const {email,name,picture}=ures.data;
+let user=await UserModel.findOne({email})
+if(!user){
+    user=await UserModel.create({name,email,image:picture})
+}
+const {_id}=user;
+const token=jwt.sign({id:_id,email},process.env.JWT_SECRET,{
+    expiresIn:process.env.JWT_TIMEOUT
+})
+
+return res.status(200).json({
+    message:'success',
+    token,
+    user
+})
 } catch (error) {
-    console.log(error)
+    res.status(500).json({
+        message:'Internal Server Error'
+    })
     
 }
 }
