@@ -15,7 +15,7 @@ const oauth2Client = new OAuth2(
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-// Route to initiate OAuth2 flow
+
 app.get('/auth', (req, res) => {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
@@ -27,21 +27,21 @@ app.get('/auth', (req, res) => {
   res.redirect(authUrl);
 });
 
-// OAuth2 callback route
+
 app.get('/google/callback', async (req, res) => {
   const { code } = req.query;
   try {
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
 
-    // Store tokens and other user data as needed
+    
     res.status(200).json({ message: 'Authentication successful', tokens });
   } catch (error) {
     res.status(500).json({ message: 'Error during authentication', error });
   }
 });
 
-// Route to fetch emails
+
 app.get('/fetch-emails', async (req, res) => {
   try {
     const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
@@ -72,7 +72,7 @@ const createLabel = async (gmail, labelName) => {
       return response.data.id;
     } catch (error) {
       if (error.code === 409) {
-        // Label already exists
+       
         console.log(`Label "${labelName}" already exists.`);
         return null;
       }
@@ -85,14 +85,14 @@ const createLabel = async (gmail, labelName) => {
       const labelList = await gmail.users.labels.list({ userId: 'me' });
       const labels = labelList.data.labels || [];
   
-      // Check if the label already exists
+     
       const existingLabel = labels.find(label => label.name === labelName);
   
       if (existingLabel) {
-        return existingLabel.id; // Return existing label ID
+        return existingLabel.id; 
       }
   
-      // If label doesn't exist, create a new one
+     
       const response = await gmail.users.labels.create({
         userId: 'me',
         requestBody: {
@@ -123,7 +123,7 @@ const createLabel = async (gmail, labelName) => {
         userId: 'me',
         requestBody: {
           raw: encodedMessage,
-          threadId: messageId, // Sends the reply in the same thread as the original email
+          threadId: messageId,
         },
       });
   
@@ -137,11 +137,11 @@ const createLabel = async (gmail, labelName) => {
     try {
       const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
   
-      // Fetch the latest email (limit to 1 email, regardless of read status)
+      
       const response = await gmail.users.messages.list({
         userId: 'me',
         maxResults: 1,
-        q: '', // No filter, fetches the most recent email
+        q: '',
       });
   
       const messages = response.data.messages || [];
@@ -149,11 +149,11 @@ const createLabel = async (gmail, labelName) => {
         return res.status(200).json({ message: 'No emails found' });
       }
   
-      // Get the latest email's details
+    
       const latestMessage = messages[0];
       const msg = await gmail.users.messages.get({ userId: 'me', id: latestMessage.id });
   
-      // Extract the email body
+
       const emailContent = msg.data.payload.parts
         ? msg.data.payload.parts.map(part => Buffer.from(part.body.data, 'base64').toString()).join('')
         : Buffer.from(msg.data.payload.body.data, 'base64').toString();
@@ -161,12 +161,12 @@ const createLabel = async (gmail, labelName) => {
       const recipientEmail = msg.data.payload.headers.find(header => header.name === 'From').value;
       const subject = msg.data.payload.headers.find(header => header.name === 'Subject').value;
   
-      // Analyze email content using Gemini API
+      
       const prompt = `Categorize the following email content: "${emailContent}"`;
       const result = await model.generateContent(prompt);
       const category = categorizeEmail(result.response.text());
   
-      // Determine the label and the reply based on the category
+   
       let labelName, replyText;
       if (category === 'Interested') {
         labelName = 'Interested';
@@ -179,10 +179,10 @@ const createLabel = async (gmail, labelName) => {
         replyText = 'Thank you for reaching out! Can you please provide more information or clarify your request?';
       }
   
-      // Fetch or create the label and get its ID
+      
       const labelId = await getLabelId(gmail, labelName);
   
-      // Apply label to the latest email, checking if the label is already applied
+    
       const currentLabels = msg.data.labelIds || [];
       if (!currentLabels.includes(labelId)) {
         await gmail.users.messages.modify({
@@ -193,8 +193,7 @@ const createLabel = async (gmail, labelName) => {
           },
         });
       }
-  
-      // Send an automated reply based on the email category
+
       await sendReply(gmail, latestMessage.threadId, recipientEmail, subject, replyText);
   
       res.status(200).json({ message: `Email categorized as ${category}, labeled and replied to successfully.` });
@@ -206,7 +205,7 @@ const createLabel = async (gmail, labelName) => {
   
   
   function categorizeEmail(responseText) {
-    // Example categorization logic based on response text
+ 
     if (responseText.includes('interested')) return 'Interested';
     if (responseText.includes('not interested')) return 'Not Interested';
     return 'More Information';
