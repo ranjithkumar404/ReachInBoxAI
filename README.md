@@ -32,7 +32,7 @@ This project implements a backend system that integrates Gmail and Gemini API to
 {
   "message": "Email categorized as 'More Information', labeled and replied to successfully."
 }
-
+```
 
 ### Requirements
 
@@ -45,3 +45,37 @@ This project implements a backend system that integrates Gmail and Gemini API to
 ### Clone the repository:
 ```bash
 git clone https://github.com/your-repo/email-categorization-system.git
+```
+
+### Navigate to the project directory:
+```bash
+cd email-categorization-system
+```
+### Install dependencies
+```bash
+npm install
+```
+
+### Set up environment variables
+Create a .env file in the root directory and add your Google API and Gemini API credentials:
+
+```bash
+GMAIL_CLIENT_ID=<your-gmail-client-id>
+GMAIL_CLIENT_SECRET=<your-gmail-client-secret>
+GMAIL_REDIRECT_URI=<your-gmail-redirect-uri>
+GMAIL_REFRESH_TOKEN=<your-gmail-refresh-token>
+GEMINI_API_KEY=<your-gemini-api-key>
+```
+
+### Run the application:
+```bash
+npm start
+```
+
+## Access the endpoint:
+
+Use Postman or any other API client to make a GET request to the /fetch-latest-email endpoint.
+Example request:
+```bash
+GET http://localhost:3000/fetch-latest-email
+```
