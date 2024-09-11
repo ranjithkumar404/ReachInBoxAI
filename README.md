@@ -32,3 +32,16 @@ This project implements a backend system that integrates Gmail and Gemini API to
 {
   "message": "Email categorized as 'More Information', labeled and replied to successfully."
 }
+
+
+### Requirements
+
+- **Node.js**: Ensure that Node.js is installed on your machine.
+- **Gmail API OAuth 2.0 credentials**: Set up a project in the Google Developer Console and enable the Gmail API.
+- **Gemini API Key**: Obtain an API key from the Gemini API provider to access the categorization functionality.
+
+## Setup and Installation
+
+### Clone the repository:
+```bash
+git clone https://github.com/your-repo/email-categorization-system.git
